@@ -47,7 +47,7 @@ export const generateReportNarrative = async (
     **RISULTATI CALCOLATI:**
     - Risparmio Totale Annuo: €${results.totalAnnualSavings.toLocaleString()}
     - ROI: ${results.roiPercentage.toFixed(1)}%
-    - Payback Period (a regime): ${results.paybackPeriodMonths.toFixed(1)} mesi
+    - Payback Period (calcolato a partire dalla piena operatività/regime del sistema): ${results.paybackPeriodMonths.toFixed(1)} mesi
     - Risparmio da Fermo Macchina: €${results.downtimeSavings.toLocaleString()}
     - Efficienza/Risparmio Manodopera: €${(results.laborSavings + results.adminSavings).toLocaleString()}
     - Risparmio Materiali: €${results.materialSavings.toLocaleString()}
@@ -56,7 +56,7 @@ export const generateReportNarrative = async (
     Genera un oggetto JSON con tre chiavi: "executiveSummary", "qualitativeBenefits", e "recommendations".
     I valori devono essere stringhe formattate in Markdown.
     
-    1. **executiveSummary**: Una panoramica di alto livello dell'impatto finanziario. Sii conciso, professionale e convincente per un C-level executive. Enfatizza il valore generato da mainsim specificamente per il settore ${inputs.industry}.
+    1. **executiveSummary**: Una panoramica di alto livello dell'impatto finanziario. Sii conciso, professionale e convincente per un C-level executive. Enfatizza il valore generato da mainsim specificamente per il settore ${inputs.industry}. **IMPORTANTE**: Quando citi il Payback Period, specifica esplicitamente che si intende "a regime" o "dalla piena operatività" del software.
     2. **qualitativeBenefits**: Elenco puntato che descrive i benefici non monetari (es. sicurezza, compliance, visibilità dati, morale dei tecnici) pertinenti al settore ${inputs.industry} e alla gestione di ${inputs.numberOfSites} sedi.
     3. **recommendations**: Consigli strategici su come ottenere questi numeri (es. focus sull'adozione mobile, standardizzazione tra le ${inputs.numberOfSites} sedi).
 
