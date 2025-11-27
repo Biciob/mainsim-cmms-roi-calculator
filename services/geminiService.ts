@@ -1,13 +1,35 @@
 import { GoogleGenAI } from "@google/genai";
 import { ROICalculationResult, ROIInputs, AIReportContent } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Gestione robusta delle variabili d'ambiente per diversi bundler (Vite, CRA, Next.js) su Vercel
+const getApiKey = () => {
+  // @ts-ignore
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
+    // @ts-ignore
+    return import.meta.env.VITE_API_KEY;
+  }
+  if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
+  if (process.env.NEXT_PUBLIC_API_KEY) return process.env.NEXT_PUBLIC_API_KEY;
+  return process.env.API_KEY;
+};
+
+const apiKey = getApiKey();
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const generateReportNarrative = async (
   inputs: ROIInputs,
   results: ROICalculationResult
 ): Promise<AIReportContent> => {
   
+  if (!ai) {
+    console.warn("API Key mancante. Generazione report AI saltata.");
+    return {
+      executiveSummary: "Configurazione API Key mancante. Impossibile generare il report AI. Assicurati di aver impostato VITE_API_KEY o REACT_APP_API_KEY su Vercel.",
+      qualitativeBenefits: "Dati non disponibili.",
+      recommendations: "Dati non disponibili."
+    };
+  }
+
   const prompt = `
     Sei "ROI-Engineer", un consulente senior specializzato nel calcolo del ROI per l'adozione di un CMMS (mainsim).
     
@@ -25,7 +47,7 @@ export const generateReportNarrative = async (
     **RISULTATI CALCOLATI:**
     - Risparmio Totale Annuo: €${results.totalAnnualSavings.toLocaleString()}
     - ROI: ${results.roiPercentage.toFixed(1)}%
-    - Payback Period: ${results.paybackPeriodMonths.toFixed(1)} mesi
+    - Payback Period (a regime): ${results.paybackPeriodMonths.toFixed(1)} mesi
     - Risparmio da Fermo Macchina: €${results.downtimeSavings.toLocaleString()}
     - Efficienza/Risparmio Manodopera: €${(results.laborSavings + results.adminSavings).toLocaleString()}
     - Risparmio Materiali: €${results.materialSavings.toLocaleString()}
@@ -62,7 +84,7 @@ export const generateReportNarrative = async (
   } catch (error) {
     console.error("Errore generazione report:", error);
     return {
-      executiveSummary: "Impossibile generare l'Executive Summary in questo momento.",
+      executiveSummary: "Si è verificato un errore durante la generazione dell'analisi AI. Verifica la tua connessione o la quota API.",
       qualitativeBenefits: "Impossibile generare i benefici qualitativi in questo momento.",
       recommendations: "Impossibile generare le raccomandazioni in questo momento."
     };

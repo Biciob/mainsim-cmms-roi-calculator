@@ -24,6 +24,10 @@ const InputField: React.FC<InputFieldProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
+  // Tailwind dynamic class fix: full class names must be present for purgeCSS to work in production
+  const paddingLeftClass = prefix ? 'pl-8' : 'pl-3';
+  const paddingRightClass = suffix ? 'pr-8' : 'pr-3';
+
   return (
     <div className="mb-4 relative">
       <div className="flex items-center gap-2 mb-1">
@@ -65,7 +69,7 @@ const InputField: React.FC<InputFieldProps> = ({
           name={name}
           id={name}
           min={min}
-          className={`block w-full rounded-md border-gray-300 py-2.5 focus:border-[#6958dd] focus:ring-[#6958dd] sm:text-sm border pl-${prefix ? '8' : '3'} pr-${suffix ? '8' : '3'} transition-colors`}
+          className={`block w-full rounded-md border-gray-300 py-2.5 focus:border-[#6958dd] focus:ring-[#6958dd] sm:text-sm border transition-colors ${paddingLeftClass} ${paddingRightClass}`}
           placeholder="0"
           value={value || ''}
           onChange={(e) => onChange(name, parseFloat(e.target.value) || 0)}
