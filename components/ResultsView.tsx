@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { Download, TrendingUp, Clock, DollarSign, Activity, Share2 } from 'lucide-react';
+import { Download, TrendingUp, Clock, DollarSign, Activity } from 'lucide-react';
 import { ROICalculationResult, AIReportContent, ROIInputs } from '../types';
 
 interface ResultsViewProps {
@@ -61,34 +61,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
     window.print();
   };
 
-  const handleShare = async () => {
-    const shareData = {
-        title: 'Mainsim ROI Calculator',
-        text: `Analisi ROI per ${inputs.industry} completata. Risparmio annuo stimato: €${results.totalAnnualSavings.toLocaleString()}.`,
-        url: window.location.href
-    };
-
-    if (navigator.share) {
-        try {
-            await navigator.share(shareData);
-        } catch (err) {
-            console.log('Condivisione annullata o fallita:', err);
-        }
-    } else {
-        // Fallback email
-        const subject = encodeURIComponent(`Report ROI Mainsim: ${inputs.industry}`);
-        const body = encodeURIComponent(
-            `Ecco il report ROI generato con Mainsim ROI Engineer.\n\n` +
-            `Settore: ${inputs.industry}\n` +
-            `Risparmio Totale Annuo Stimato: €${results.totalAnnualSavings.toLocaleString()}\n` +
-            `ROI: ${results.roiPercentage.toFixed(0)}%\n` +
-            `Payback Period: ${results.paybackPeriodMonths.toFixed(1)} mesi\n\n` +
-            `Puoi accedere al calcolatore qui: ${window.location.href}`
-        );
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    }
-  };
-
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-12">
       
@@ -98,13 +70,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
           ← Modifica Input
         </button>
         <div className="flex gap-3">
-            <button 
-                onClick={handleShare}
-                className="flex items-center gap-2 bg-white text-[#3f4142] border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors shadow-sm font-medium"
-            >
-                <Share2 size={18} />
-                Condividi
-            </button>
             <button 
                 onClick={handlePrint}
                 className="flex items-center gap-2 bg-[#3f4142] text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors shadow-sm font-medium"
@@ -144,8 +109,8 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
             )}
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* KPI Cards - Grid Layout Modified: Max 2 cols on MD and LG screens */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <Card 
                 title="Risparmio Totale Annuo" 
                 value={formatCurrency(results.totalAnnualSavings)} 
