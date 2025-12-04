@@ -1,4 +1,4 @@
-export type IndustryType = 'Manufacturing' | 'Facility Management' | 'Retail' | 'Healthcare' | 'Logistics' | 'Hospitality' | 'Other';
+export type IndustryType = 'Manufacturing' | 'Industria Alimentare' | 'Facility Management' | 'Retail' | 'Healthcare' | 'Logistics' | 'Hospitality' | 'Other';
 
 export interface ROIInputs {
   // Context (Step 1)

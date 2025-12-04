@@ -4,7 +4,7 @@ import ResultsView from './components/ResultsView';
 import { ROIInputs, ROICalculationResult, AIReportContent, DEFAULT_RATES, IndustryType } from './types';
 import { calculateROI } from './utils/calculations';
 import { generateReportNarrative } from './services/geminiService';
-import { Calculator, ArrowRight, Check, Building2, Info } from 'lucide-react';
+import { Calculator, ArrowRight, Check, Building2, Info, ExternalLink } from 'lucide-react';
 
 const initialInputs: ROIInputs = {
   industry: 'Facility Management',
@@ -30,6 +30,7 @@ const initialInputs: ROIInputs = {
 const INDUSTRIES: IndustryType[] = [
     'Facility Management',
     'Manufacturing', 
+    'Industria Alimentare',
     'Retail', 
     'Logistics', 
     'Healthcare', 
@@ -74,6 +75,14 @@ export default function App() {
                 downtimeCost: 'Costo Orario Fermo Linea',
                 workOrder: 'Ordini di Lavoro (Stima Annuale)',
                 material: 'Spesa Ricambi (Stima Annuale)'
+            };
+        case 'Industria Alimentare':
+            return {
+                sites: 'Stabilimenti / Linee Produttive',
+                downtime: 'Ore Fermo / Rischio Deperibilità',
+                downtimeCost: 'Costo Fermo + Spreco Prodotto',
+                workOrder: 'OdL / Controlli Qualità & HACCP',
+                material: 'Ricambi e Consumabili'
             };
         case 'Facility Management':
         case 'Retail':
@@ -164,8 +173,16 @@ export default function App() {
                 {renderStepIcon(3, 'Report')}
             </div>
 
-            {/* Right: Logo */}
-            <div className="shrink-0">
+            {/* Right: Actions & Logo */}
+            <div className="flex items-center gap-6 shrink-0">
+                 <a 
+                    href="https://www.mainsim.com/richiesta-demo/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-[#6958dd] transition-colors"
+                 >
+                    Torna al sito <ExternalLink size={16} />
+                 </a>
                  <img 
                     src="https://mainsim.com/wp-content/uploads/2020/04/mainsim-logo-dark.png" 
                     alt="mainsim logo" 
@@ -423,7 +440,7 @@ export default function App() {
       </main>
 
       <footer className="text-center py-6 text-gray-400 text-sm no-print">
-         @2025 mainsim | ROI Calculator Engineer - Designed for maintenance professionals.
+         ©2025 mainsim - what maintenance can be | Designed with ❤️ for maintenance professionals.
       </footer>
     </div>
   );

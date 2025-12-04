@@ -30,11 +30,19 @@ export const generateReportNarrative = async (
     };
   }
 
+  // Costruzione del contesto specifico per settore
+  let industryContext = "";
+  if (inputs.industry === 'Industria Alimentare') {
+    industryContext = "Settore: Industria Alimentare (Food & Beverage). È FONDAMENTALE che il linguaggio rifletta le priorità di questo settore: Compliance normativa stringente (HACCP, FDA, BRC, IFS), Sicurezza Alimentare, tracciabilità lotti, audit readiness e gestione della catena del freddo/deperibilità. Il fermo macchina qui significa rischio deterioramento materie prime (spreco alimentare).";
+  } else {
+    industryContext = `Settore: ${inputs.industry}. (Adatta il linguaggio: es. Manifattura = linee/OEE; Facility = asset/edifici/ticket SLA; Sanità = sicurezza paziente/accreditamento).`;
+  }
+
   const prompt = `
     Sei "ROI-Engineer", un consulente senior specializzato nel calcolo del ROI per l'adozione di un CMMS (mainsim).
     
     **CONTESTO CLIENTE:**
-    - Settore: ${inputs.industry} (Adatta il linguaggio a questo settore: es. se Manifattura parla di impianti/linee, se Facility Management parla di edifici/asset immobiliari, se Sanità parla di sicurezza paziente/compliance).
+    - ${industryContext}
     - Numero di sedi/siti: ${inputs.numberOfSites}
     
     **DATI DI INPUT:**
@@ -56,9 +64,11 @@ export const generateReportNarrative = async (
     Genera un oggetto JSON con tre chiavi: "executiveSummary", "qualitativeBenefits", e "recommendations".
     I valori devono essere stringhe formattate in Markdown.
     
-    1. **executiveSummary**: Una panoramica di alto livello dell'impatto finanziario. Sii conciso, professionale e convincente per un C-level executive. Enfatizza il valore generato da mainsim specificamente per il settore ${inputs.industry}. **IMPORTANTE**: Quando citi il Payback Period, specifica esplicitamente che si intende "a regime" o "dalla piena operatività" del software.
-    2. **qualitativeBenefits**: Elenco puntato che descrive i benefici non monetari (es. sicurezza, compliance, visibilità dati, morale dei tecnici) pertinenti al settore ${inputs.industry} e alla gestione di ${inputs.numberOfSites} sedi.
-    3. **recommendations**: Consigli strategici su come ottenere questi numeri (es. focus sull'adozione mobile, standardizzazione tra le ${inputs.numberOfSites} sedi).
+    1. **executiveSummary**: Una panoramica di alto livello dell'impatto finanziario. Sii conciso, professionale e convincente per un C-level executive. Enfatizza il valore generato da mainsim specificamente per il settore richiesto. **IMPORTANTE**: Quando citi il Payback Period, specifica esplicitamente che si intende "a regime" o "dalla piena operatività" del software.
+    2. **qualitativeBenefits**: Elenco puntato che descrive i benefici non monetari.
+       - Se Industria Alimentare: cita Audit, HACCP, FDA, Tracciabilità, Sicurezza Alimentare.
+       - Altrimenti: generici ma rilevanti (morale tecnici, SLA, compliance).
+    3. **recommendations**: Consigli strategici su come ottenere questi numeri (es. adozione mobile, integrazioni IoT, standardizzazione processi).
 
     **STILE:**
     - Professionale, stile consulenziale "Big 4".
