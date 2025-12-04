@@ -57,7 +57,7 @@ export interface AIReportContent {
 
 export const DEFAULT_RATES = {
   DOWNTIME_REDUCTION: 0.20, // 20%
-  WORKFLOW_EFFICIENCY: 0.25, // 25%
+  WORKFLOW_EFFICIENCY: 0.25, // 25% - Restored to original standard
   MATERIAL_SAVINGS: 0.10, // 10%
   LABOR_OPTIMIZATION: 0.15 // 15%
 };

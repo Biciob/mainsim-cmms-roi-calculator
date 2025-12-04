@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { Download, TrendingUp, Clock, DollarSign, Activity } from 'lucide-react';
+import { Download, TrendingUp, Clock, DollarSign, Activity, ExternalLink, Loader2, ArrowRight, FileText } from 'lucide-react';
 import { ROICalculationResult, AIReportContent, ROIInputs } from '../types';
 
 interface ResultsViewProps {
@@ -23,14 +23,14 @@ const BRAND_GRAY = '#f7f7f7';
 const COLORS = [BRAND_PURPLE, '#10B981', '#F59E0B', '#6366F1'];
 
 const Card: React.FC<{ title: string; value: string; subtext: string; icon: React.ReactNode }> = ({ title, value, subtext, icon }) => (
-  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow min-w-0 pdf-break-inside-avoid">
     <div className="flex justify-between items-start">
-      <div>
-        <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">{title}</p>
-        <p className="text-3xl font-bold text-[#3f4142] mt-2">{value}</p>
-        <p className="text-sm text-gray-600 mt-1">{subtext}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-gray-500 uppercase tracking-wide truncate">{title}</p>
+        <p className="text-3xl font-bold text-[#3f4142] mt-2 truncate">{value}</p>
+        <p className="text-sm text-gray-600 mt-1 truncate">{subtext}</p>
       </div>
-      <div className="p-3 bg-purple-50 rounded-lg text-[#6958dd]">
+      <div className="p-3 bg-purple-50 rounded-lg text-[#6958dd] shrink-0 ml-4">
         {icon}
       </div>
     </div>
@@ -38,6 +38,7 @@ const Card: React.FC<{ title: string; value: string; subtext: string; icon: Reac
 );
 
 const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, loading, onReset }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
   
   const formatCurrency = (val: number) => 
     new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
@@ -57,31 +58,79 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
     }
   ];
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPdf = () => {
+    const element = document.getElementById('roi-report-content');
+    if (!element) return;
+
+    setIsDownloading(true);
+
+    const opt = {
+      margin: [10, 10], // top/bottom, left/right in mm
+      filename: `Mainsim_ROI_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    // @ts-ignore
+    if (window.html2pdf) {
+      // @ts-ignore
+      window.html2pdf().set(opt).from(element).save().then(() => {
+        setIsDownloading(false);
+      }).catch((err: any) => {
+        console.error("PDF generation failed", err);
+        setIsDownloading(false);
+        alert("Errore durante la generazione del PDF. Riprova o usa la funzione di stampa del browser.");
+      });
+    } else {
+      // Fallback
+      window.print();
+      setIsDownloading(false);
+    }
   };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-12">
       
       {/* Header Actions */}
-      <div className="flex justify-between items-center no-print">
-        <button onClick={onReset} className="text-sm text-gray-500 hover:text-[#6958dd] underline">
-          ← Modifica Input
-        </button>
-        <div className="flex gap-3">
-            <button 
-                onClick={handlePrint}
-                className="flex items-center gap-2 bg-[#3f4142] text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors shadow-sm font-medium"
+      <div className="flex flex-col md:flex-row justify-between items-center no-print gap-4">
+        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+            <button onClick={onReset} className="text-sm text-gray-500 hover:text-[#6958dd] underline">
+            ← Modifica Input
+            </button>
+            <a 
+                href="https://www.mainsim.com/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-sm font-medium text-gray-600 hover:text-[#6958dd] flex items-center gap-1"
             >
-                <Download size={18} />
-                Scarica PDF
+                Torna al sito <ExternalLink size={14} />
+            </a>
+        </div>
+
+        <div className="flex gap-3 w-full md:w-auto">
+            <a
+                href="https://www.mainsim.com/richiesta-demo/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#6958dd] text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors shadow-sm font-medium whitespace-nowrap"
+            >
+                Richiedi una demo
+            </a>
+            <button 
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#3f4142] text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors shadow-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {isDownloading ? 'Generazione...' : 'Scarica PDF'}
             </button>
         </div>
       </div>
 
-      {/* Report Header */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+      {/* Report Container - Added ID for html2pdf */}
+      <div id="roi-report-content" className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
         <div className="flex justify-between items-start border-b border-gray-100 pb-6 mb-6">
             <div>
                 <h1 className="text-2xl font-bold text-[#3f4142]">Report Analisi ROI</h1>
@@ -94,7 +143,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
         </div>
 
         {/* Executive Summary Section */}
-        <div className="mb-8">
+        <div className="mb-8 pdf-break-inside-avoid">
             <h2 className="text-lg font-bold text-[#3f4142] mb-3 uppercase tracking-wider text-xs">Executive Summary</h2>
             {loading ? (
                 <div className="animate-pulse space-y-2">
@@ -103,7 +152,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
                     <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                 </div>
             ) : (
-                <div className="prose prose-indigo max-w-none text-gray-700 leading-relaxed">
+                <div className="prose prose-indigo max-w-none text-gray-700 leading-relaxed text-sm md:text-base">
                     <ReactMarkdown>{aiContent?.executiveSummary || ""}</ReactMarkdown>
                 </div>
             )}
@@ -138,7 +187,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 print-break-before">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 pdf-break-inside-avoid">
             <div className="bg-[#f7f7f7] p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-[#3f4142] mb-4 text-center">Breakdown dei Risparmi</h3>
                 <div className="h-64">
@@ -187,7 +236,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
         </div>
 
         {/* Detailed breakdown table */}
-        <div className="mb-12">
+        <div className="mb-12 pdf-break-inside-avoid">
             <h3 className="text-lg font-bold text-[#3f4142] mb-4">Dettaglio Finanziario</h3>
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
                 <table className="min-w-full divide-y divide-gray-300">
@@ -233,7 +282,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
         </div>
 
         {/* AI Narrative Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 print-break-before">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pdf-break-inside-avoid">
              <div>
                 <h3 className="text-lg font-bold text-[#3f4142] mb-3 border-b pb-2 border-gray-200">Benefici Qualitativi</h3>
                 {loading ? (
@@ -263,8 +312,42 @@ const ResultsView: React.FC<ResultsViewProps> = ({ inputs, results, aiContent, l
                 )}
             </div>
         </div>
+
+        {/* Modern Call to Action Box */}
+        <div className="mt-16 bg-gradient-to-br from-[#6958dd] via-[#5b4bc4] to-[#4338ca] rounded-2xl p-10 md:p-12 text-center text-white shadow-xl relative overflow-hidden pdf-break-inside-avoid">
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-900 opacity-20 rounded-full -ml-10 -mb-10 blur-xl"></div>
+            
+            <div className="relative z-10">
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">Pronto per lo step successivo?</h3>
+                <p className="text-purple-100 leading-relaxed text-lg max-w-2xl mx-auto mb-10">
+                    Mettiti in contatto con i nostri esperti, ti aiuteranno a valutare le tue sfide e capire se il CMMS mainsim è la soluzione giusta per la tua azienda, guidandoti nel cambiamento.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                     <a 
+                        href="https://www.mainsim.com/contatti/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto bg-white text-[#6958dd] hover:bg-gray-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                    >
+                        Parla con un esperto <ArrowRight size={20} />
+                    </a>
+                    
+                    <a 
+                        href="https://www.mainsim.com/brochure-mainsim-cmms/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto bg-purple-800/30 text-white hover:bg-purple-800/50 border border-purple-400/30 px-8 py-4 rounded-xl font-semibold text-lg backdrop-blur-sm transition-all flex items-center justify-center gap-2"
+                    >
+                        <FileText size={20} /> Scarica Brochure
+                    </a>
+                </div>
+            </div>
+        </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+        <div className="mt-16 pt-8 border-t border-gray-200 text-center">
              <img 
                 src="https://mainsim.com/wp-content/uploads/2020/04/mainsim-logo-dark.png" 
                 alt="mainsim logo" 

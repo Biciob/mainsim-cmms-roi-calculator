@@ -4,7 +4,7 @@ import ResultsView from './components/ResultsView';
 import { ROIInputs, ROICalculationResult, AIReportContent, DEFAULT_RATES, IndustryType } from './types';
 import { calculateROI } from './utils/calculations';
 import { generateReportNarrative } from './services/geminiService';
-import { Calculator, ArrowRight, Check, Building2 } from 'lucide-react';
+import { Calculator, ArrowRight, Check, Building2, Info } from 'lucide-react';
 
 const initialInputs: ROIInputs = {
   industry: 'Facility Management',
@@ -17,7 +17,7 @@ const initialInputs: ROIInputs = {
   annualMaintenanceMaterialSpend: 50000,
   totalWorkOrdersPerYear: 2500,
   avgTimePerWorkOrder: 1,
-  annualCmmsCost: 5000,
+  annualCmmsCost: 15000,
   reductionDowntimePercent: 0,
   efficiencyWorkflowPercent: 0,
   savingsMaterialPercent: 0
@@ -70,36 +70,36 @@ export default function App() {
         case 'Manufacturing':
             return {
                 sites: 'Stabilimenti / Impianti',
-                downtime: 'Ore Fermo Linea',
+                downtime: 'Ore Fermo Linea (Stima Annuale)',
                 downtimeCost: 'Costo Orario Fermo Linea',
-                workOrder: 'Ordini di Lavoro (Manutenzione)',
-                material: 'Spesa Ricambi Macchinari'
+                workOrder: 'Ordini di Lavoro (Stima Annuale)',
+                material: 'Spesa Ricambi (Stima Annuale)'
             };
         case 'Facility Management':
         case 'Retail':
         case 'Hospitality':
             return {
                 sites: 'Edifici / Sedi Gestite',
-                downtime: 'Ore Indisponibilità Asset',
+                downtime: 'Ore Indisponibilità Asset (Stima Annuale)',
                 downtimeCost: 'Costo Disservizio / Penali',
-                workOrder: 'Ticket / Richieste Intervento',
-                material: 'Spesa Materiali / Forniture'
+                workOrder: 'Ticket / Interventi (Stima Annuale)',
+                material: 'Spesa Materiali (Stima Annuale)'
             };
         case 'Healthcare':
             return {
                 sites: 'Strutture / Presidi',
-                downtime: 'Ore Fermo Apparecchiature',
+                downtime: 'Ore Fermo Apparecchiature (Stima Annuale)',
                 downtimeCost: 'Costo Orario Disservizio',
-                workOrder: 'Ordini di Lavoro Clinici/Tecnici',
-                material: 'Spesa Ricambi Biomedicali'
+                workOrder: 'OdL Clinici/Tecnici (Stima Annuale)',
+                material: 'Spesa Ricambi (Stima Annuale)'
             };
         default:
             return {
                 sites: 'Numero di Sedi',
-                downtime: 'Ore di Fermo Annuali',
+                downtime: 'Ore di Fermo (Stima Annuale)',
                 downtimeCost: 'Costo per Ora di Fermo',
-                workOrder: 'Ordini di Lavoro Annuali',
-                material: 'Spesa Annuale Materiali'
+                workOrder: 'Ordini di Lavoro (Stima Annuale)',
+                material: 'Spesa Materiali (Stima Annuale)'
             };
     }
   };
@@ -138,10 +138,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen pb-12 bg-[#f7f7f7] font-sans text-[#3f4142]">
+    <div className="min-h-screen pb-12 bg-[#f7f7f7] font-sans text-[#3f4142] flex flex-col">
       
       {/* Compact Header with Title & Workflow */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
             {/* Left: Title */}
@@ -177,7 +177,7 @@ export default function App() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 flex-grow w-full">
         
         {/* Step 1: Context */}
         {step === 'context' && (
@@ -272,10 +272,11 @@ export default function App() {
                 <div className="p-8 space-y-10">
                     {/* Section 1: Team & Labor */}
                     <div>
-                        <h3 className="text-lg font-bold text-[#3f4142] mb-6 flex items-center gap-3">
+                        <h3 className="text-lg font-bold text-[#3f4142] mb-1 flex items-center gap-3">
                             <span className="bg-[#f7f7f7] text-[#6958dd] w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border border-gray-200">A</span>
                             Team e Manodopera
                         </h3>
+                        <p className="text-xs text-gray-400 mb-6 ml-11 italic">Non hai questi dati? Inserisci una stima.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label="Numero di Tecnici/Manutentori" name="technicians" value={inputs.technicians} onChange={handleInputChange} />
                             <InputField label="Costo Orario Medio (€)" name="avgHourlyRate" value={inputs.avgHourlyRate} onChange={handleInputChange} prefix="€" />
@@ -287,10 +288,11 @@ export default function App() {
 
                     {/* Section 2: Downtime */}
                     <div>
-                        <h3 className="text-lg font-bold text-[#3f4142] mb-6 flex items-center gap-3">
+                        <h3 className="text-lg font-bold text-[#3f4142] mb-1 flex items-center gap-3">
                              <span className="bg-[#f7f7f7] text-[#6958dd] w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border border-gray-200">B</span>
                              Impatto Fermi / Disservizi
                         </h3>
+                        <p className="text-xs text-gray-400 mb-6 ml-11 italic">Non hai questi dati? Inserisci una stima.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label={labels.downtime} name="downtimeHoursPerYear" value={inputs.downtimeHoursPerYear} onChange={handleInputChange} suffix="h" />
                             <InputField 
@@ -308,10 +310,11 @@ export default function App() {
 
                      {/* Section 3: Operations */}
                      <div>
-                        <h3 className="text-lg font-bold text-[#3f4142] mb-6 flex items-center gap-3">
+                        <h3 className="text-lg font-bold text-[#3f4142] mb-1 flex items-center gap-3">
                              <span className="bg-[#f7f7f7] text-[#6958dd] w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border border-gray-200">C</span>
                              Workflow e Materiali
                         </h3>
+                        <p className="text-xs text-gray-400 mb-6 ml-11 italic">Non hai questi dati? Inserisci una stima.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label={labels.workOrder} name="totalWorkOrdersPerYear" value={inputs.totalWorkOrdersPerYear} onChange={handleInputChange} />
                             <InputField label={labels.material} name="annualMaintenanceMaterialSpend" value={inputs.annualMaintenanceMaterialSpend} onChange={handleInputChange} prefix="€" />
@@ -328,6 +331,24 @@ export default function App() {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField label="Costo Annuale Stimato CMMS" name="annualCmmsCost" value={inputs.annualCmmsCost} onChange={handleInputChange} prefix="€" />
+                        </div>
+                        
+                        {/* Disclaimer Costi CMMS */}
+                        <div className="mt-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm text-sm text-gray-600">
+                            <div className="flex gap-3 items-start">
+                                <Info className="shrink-0 text-[#6958dd] mt-0.5" size={18} />
+                                <div>
+                                    <p className="mb-2 text-[#3f4142]">
+                                        <strong>Struttura Costi:</strong> Il budget per un CMMS si compone tipicamente di <strong>Licenze Ricorrenti</strong> (OPEX, variabili per utente/anno) e <strong>Servizi di Avviamento e Onboarding</strong> una tantum (CAPEX) che includono configurazione, personalizzazioni, training ed eventuali integrazioni con altri sistemi in uso, pagati solo il primo anno.
+                                    </p>
+                                    <p>
+                                        Il valore sopra è una stima "all-inclusive" (Licenze + Servizi) per il primo anno. Per un'analisi dettagliata, 
+                                        <a href="https://www.mainsim.com/contatti/" target="_blank" rel="noopener noreferrer" className="text-[#6958dd] font-bold hover:underline ml-1">
+                                            parla con un nostro esperto
+                                        </a>.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -400,6 +421,10 @@ export default function App() {
           />
         )}
       </main>
+
+      <footer className="text-center py-6 text-gray-400 text-sm no-print">
+         @2025 mainsim | ROI Calculator Engineer - Designed for maintenance professionals.
+      </footer>
     </div>
   );
 }
